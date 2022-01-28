@@ -32,11 +32,10 @@ def write_list():
     global MODULE_LIST
     if os.path.exists(PACKAGELIST):
         os.remove(PACKAGELIST)
-    file = open(PACKAGELIST, "w+")
-    for mod in MODULE_LIST:
-        str_to_write = mod["repo"] + "|" + mod["name"] + "|" + mod["url"] + "|" + str(mod["size"]) + "\n"
-        file.write(str_to_write)
-    file.close()
+    with open(PACKAGELIST, "w+") as file:
+        for mod in MODULE_LIST:
+            str_to_write = mod["repo"] + "|" + mod["name"] + "|" + mod["url"] + "|" + str(mod["size"]) + "\n"
+            file.write(str_to_write)
 
 def read_list():
     global MODULE_LIST
@@ -101,7 +100,7 @@ async def universe_checker(msg):
             mdInstalled = False
             oldName = ""
             for m in MODULE_LIST:
-                if not (m["repo"] == oldName):
+                if m["repo"] != oldName:
                     files += msgRep.FILES_IN.format(m["repo"])
                     oldName = m["repo"]
                     count = 1
@@ -152,10 +151,7 @@ async def universe_checker(msg):
             log.info(f"Module '{i['filename'][:-3]}' has been installed to userspace")
         md_installed_string = ""
         for md in modules_installed:
-            if md_installed_string == "":
-                md_installed_string += md
-            else:
-                md_installed_string += ", " + md
+            md_installed_string += md if not md_installed_string else ", " + md
         log.info("Rebooting userbot...")
         await msg.edit(msgRep.DONE_RBT)
         time.sleep(1)  # just so we can actually see a message
@@ -175,10 +171,7 @@ async def universe_checker(msg):
         mods_uninstall = cmd_args[0].split()
         modNames = ""
         for i in mods_uninstall:
-            if modNames == "":
-                modNames += i
-            else:
-                modNames += ", " + i
+            modNames += i if not modNames else ", " + i
         await msg.edit(msgRep.UNINSTALLING.format(modNames))
         for modName in mods_uninstall:
             if modName not in user_modules:

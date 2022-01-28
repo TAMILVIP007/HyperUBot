@@ -37,13 +37,7 @@ basicConfig(handlers=[fhandler, shandler], level=INFO)
 PROJECT = "HyperUBot"
 VERSION = hubot_version  # obsolete, may be removed in future updates
 OS = system()  # Current Operating System
-SAFEMODE = False
-
-# Check safe mode from command line
-if len(argv) >= 2:
-    if argv[1].lower() == "-safemode":
-        SAFEMODE = True
-
+SAFEMODE = len(argv) >= 2 and argv[1].lower() == "-safemode"
 try:
     if path.exists(LOGFILE):
         sys_string = "======= SYS INFO\n\n"
@@ -57,9 +51,8 @@ try:
         sys_string += "Python: v{}.{}.{}\n".format(version_info.major, version_info.minor, version_info.micro)
         sys_string += "Telethon: v{}\n\n".format(version.__version__)
         sys_string += "======= TERMINAL LOGGING\n\n"
-        file = open(LOGFILE, "w")
-        file.write(sys_string)
-        file.close()
+        with open(LOGFILE, "w") as file:
+            file.write(sys_string)
 except Exception as e:
     log.warning("Unable to write system information into log: {}".format(e))
 
@@ -85,10 +78,10 @@ else:
 if path.exists(path.join(".", "userbot", "config.env")):
     len_before = len(environ.items())
     load_dotenv(path.join(".", "userbot", "config.env"))
-    loaded_env = {key: value for key, value in list(environ.items())[len_before:]}
+    loaded_env = dict(list(environ.items())[len_before:])
     if not SAFEMODE:
         for key, value in loaded_env.items():
-            if not key in ("API_KEY", "API_HASH", "STRING_SESSION"):
+            if key not in ("API_KEY", "API_HASH", "STRING_SESSION"):
                 if value.startswith("[") and value.endswith("]"):
                     addConfig(key, strlist_to_list(value))
                 elif value in ("True", "true", "False", "false"):
@@ -119,10 +112,13 @@ elif path.exists(path.join(".", "userbot", "config.py")):
         for name, cfgclass in getmembers(userbot.config, isclass):
             for attr_name in vars(cfgclass):
                 attr_val = getattr(cfgclass, attr_name)
-                if not attr_name.startswith("__") and \
-                   not isfunction(attr_val):
-                    if not attr_name in ("API_KEY", "API_HASH", "STRING_SESSION"):
-                        addConfig(attr_name, attr_val)
+                if (
+                    not attr_name.startswith("__")
+                    and not isfunction(attr_val)
+                    and attr_name
+                    not in ("API_KEY", "API_HASH", "STRING_SESSION")
+                ):
+                    addConfig(attr_name, attr_val)
     API_KEY = userbot.config.ConfigClass.API_KEY if hasattr(userbot.config.ConfigClass, "API_KEY") else None
     API_HASH = userbot.config.ConfigClass.API_HASH if hasattr(userbot.config.ConfigClass, "API_HASH") else None
     STRING_SESSION = userbot.config.ConfigClass.STRING_SESSION if hasattr(userbot.config.ConfigClass, "STRING_SESSION") else None
@@ -133,7 +129,7 @@ else:
     try:
         log.warning("Couldn't find a config file in \"userbot\" directory. "\
                     "Starting Setup Assistant...")
-        PY_EXEC = executable if not " " in executable else '"' + executable + '"'
+        PY_EXEC = executable if " " not in executable else '"' + executable + '"'
         tcmd = [PY_EXEC, "setup.py"]
         execle(PY_EXEC, *tcmd, environ)
     except Exception as e:

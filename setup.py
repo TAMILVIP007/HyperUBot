@@ -20,8 +20,8 @@ from subprocess import check_call
 from sys import executable
 import os
 
-IS_WINDOWS = True if system().lower().startswith("win") else False
-PY_EXEC = executable if not " " in executable else '"' + executable + '"'
+IS_WINDOWS = bool(system().lower().startswith("win"))
+PY_EXEC = executable if " " not in executable else '"' + executable + '"'
 WIN_COLOR_ENABLED = False
 
 try:
@@ -45,11 +45,11 @@ def setColorText(text: str, color: Colors) -> str:
     return color + text + Colors.END
 
 def _userbot_installed() -> bool:
-    if not os.path.exists(os.path.join(".", "userbot")) or \
-       not os.path.exists(os.path.join(".", "userbot", "__init__.py")) or \
-       not os.path.exists(os.path.join(".", "userbot", "__main__.py")):
-        return False
-    return True
+    return bool(
+        os.path.exists(os.path.join(".", "userbot"))
+        and os.path.exists(os.path.join(".", "userbot", "__init__.py"))
+        and os.path.exists(os.path.join(".", "userbot", "__main__.py"))
+    )
 
 def _installTelethon(upgrade: bool = False) -> bool:
     try:
@@ -181,20 +181,19 @@ if __name__ == "__main__":
                 tl_import_success = True
             except:
                 pass
-            if not tl_import_success:
-                if not install_telethon_started:
-                    print("Telethon package not installed. Installing...")
-                    install_telethon_started = True
-                    _installTelethon()
-                else:
-                    print(setColorText("Unable to import Telethon. "\
-                                       "Setup Assistant was not able to "\
-                                       "install the Telethon package",
-                                       Colors.RED))
-                    quit(1)
-            else:
+            if tl_import_success:
                 break
 
+            if not install_telethon_started:
+                print("Telethon package not installed. Installing...")
+                install_telethon_started = True
+                _installTelethon()
+            else:
+                print(setColorText("Unable to import Telethon. "\
+                                   "Setup Assistant was not able to "\
+                                   "install the Telethon package",
+                                   Colors.RED))
+                quit(1)
         telethon_version = tuple(map(int, version.__version__.split(".")))
         if telethon_version < (1, 21, 1):
             print("Upgrading Telethon first...\n", Colors.YELLOW)
@@ -287,7 +286,7 @@ if __name__ == "__main__":
             inp = input("Your input "\
                         f"[{first_key_from_langs}-{last_key_from_langs}] "\
                         "(or 'X' to cancel setup): ")
-            if inp in langs.keys():
+            if inp in langs:
                 for key, value in langs.items():
                     if inp == key:
                        lang_code = value.get("code")

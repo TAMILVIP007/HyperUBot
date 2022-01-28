@@ -34,10 +34,7 @@ CC_CSV_PATH = join(TEMP_DL_DIR, "currency.csv")
 DEST_LANG = getBotLangCode()
 
 def build_supported_langs():
-    ret_val = ""
-    for i in LANGUAGES.keys():
-        ret_val += "`{}`: {}\n".format(i, LANGUAGES[i])
-    return ret_val
+    return "".join("`{}`: {}\n".format(i, LANGUAGES[i]) for i in LANGUAGES.keys())
 
 @ehandler.on(command="scrlang", outgoing=True)
 async def lang_check(event):
@@ -154,13 +151,17 @@ async def speech_to_text(event):
        isinstance(msg.media.document, Document) and \
        msg.media.document.mime_type.startswith("audio"):
         for attribute in msg.media.document.attributes:
-            if isinstance(attribute, DocumentAttributeAudio):
-                if not voice_note:  # set only if not True already
-                    voice_note = attribute.voice
-            if isinstance(attribute, DocumentAttributeFilename):
-                if not file_format:  # set only if none
-                    string = attribute.file_name.split(".")
-                    file_format = string[-1]
+            if (
+                isinstance(attribute, DocumentAttributeAudio)
+                and not voice_note
+            ):
+                voice_note = attribute.voice
+            if (
+                isinstance(attribute, DocumentAttributeFilename)
+                and not file_format
+            ):
+                string = attribute.file_name.split(".")
+                file_format = string[-1]
         if not voice_note:
             await event.edit(msgRep.WORKS_WITH_VM_ONLY)
             return
@@ -213,7 +214,7 @@ def update_currency_data():
     if exists(CC_CSV_PATH):
         file_date = datetime.fromtimestamp(getmtime(CC_CSV_PATH))
         duration = datetime.today() - file_date
-        if not duration.days >= 1:  # don't update if file is not a day old
+        if duration.days < 1:  # don't update if file is not a day old
             return
 
     try:
@@ -231,7 +232,7 @@ def update_currency_data():
             for filename in contents:
                 if filename.endswith(".csv"):
                     csv_filename = filename
-                    zipObject.extract(filename, TEMP_DL_DIR)
+                    zipObject.extract(csv_filename, TEMP_DL_DIR)
                     break
             zipObject.close()
         try:
@@ -279,10 +280,10 @@ async def cc(event):
         except Exception as e:
             log.warning(f"Unable to read updated data history: {e}. Falling back to default currency data.")
             c = CurrencyConverter()
-        if not c_from_iso in c.currencies:
+        if c_from_iso not in c.currencies:
             await event.edit(msgRep.CC_ISO_UNSUPPORTED.format(c_from_iso))
             return
-        if not c_to_iso in c.currencies:
+        if c_to_iso not in c.currencies:
             await event.edit(msgRep.CC_ISO_UNSUPPORTED.format(c_to_iso))
             return
         date = c.bounds[c_from_iso]

@@ -52,8 +52,8 @@ async def purge(event):
     """ Please don't abuse this feature to delete someone's else whole group history, for real, just don't """
     if event.reply_to_msg_id:
         chat = await event.get_chat()
-        channel_obj = True if isinstance(chat, Channel) else False
-        chat_obj = True if isinstance(chat, Chat) else False
+        channel_obj = isinstance(chat, Channel)
+        chat_obj = isinstance(chat, Chat)
 
         if channel_obj or chat_obj:
             if not chat.creator and not chat.admin_rights:
@@ -67,7 +67,7 @@ async def purge(event):
         if chat_obj or isinstance(chat, User):
             # For normal groups and PMs
             async for message in event.client.iter_messages(entity=chat.id, min_id=event.reply_to_msg_id):
-                if not message.id == event.message.id:
+                if message.id != event.message.id:
                     message_ids.append(message.id)
             message_ids.append(event.reply_to_msg_id)
         else:
@@ -79,16 +79,11 @@ async def purge(event):
             # message IDs. Using this method in PMs or normal groups may accidentally cause
             # deletions in different PM conversations or normal chats
             for i in range(event.reply_to_msg_id, event.message.id):
-                if not i == event.message.id:
+                if i != event.message.id:
                     message_ids.append(i)
             message_ids.reverse()
 
-        nested_msgs = []
-
-        # As Telegram only allows to delete up to 100 messages at once,
-        # nest every 100th ID into a new list
-        for i in range(0, len(message_ids), 100):
-            nested_msgs.append(message_ids[i:i+100])
+        nested_msgs = [message_ids[i:i+100] for i in range(0, len(message_ids), 100)]
 
         msgs_count = 0
         try:

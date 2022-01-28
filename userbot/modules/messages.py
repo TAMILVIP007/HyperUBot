@@ -64,11 +64,10 @@ async def countmessages(event):
             await event.edit(msgRep.USER_HAS_SENT_REMOTE.format(user_link, msg_info.count, chat.title))
         else:
             await event.edit(msgRep.USER_HAS_SENT.format(user_link, msg_info.count))
+    elif remote:
+        await event.edit(msgRep.CANNOT_COUNT_MSG_REMOTE.format(chat.title))
     else:
-        if remote:
-            await event.edit(msgRep.CANNOT_COUNT_MSG_REMOTE.format(chat.title))
-        else:
-            await event.edit(msgRep.CANNOT_COUNT_MSG)
+        await event.edit(msgRep.CANNOT_COUNT_MSG)
     return
 
 @ehandler.on(command="pin", hasArgs=True, outgoing=True)
@@ -85,7 +84,7 @@ async def pin(event):
         return
 
     arg_from_event = event.pattern_match.group(1)
-    notify = True if arg_from_event.lower() == "loud" else False
+    notify = arg_from_event.lower() == "loud"
     try:
         await event.client.pin_message(chat.id, msg_id, notify=notify)
         await event.edit(msgRep.PIN_SUCCESS)
@@ -104,7 +103,7 @@ async def pin(event):
 @ehandler.on(command="unpin", hasArgs=True, outgoing=True)
 async def pin(event):
     arg_from_event = event.pattern_match.group(1)
-    all_msgs = True if arg_from_event.lower() == "all" else False
+    all_msgs = arg_from_event.lower() == "all"
 
     if not all_msgs:
         if event.reply_to_msg_id:

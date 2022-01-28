@@ -40,28 +40,26 @@ async def userid(event):
             org_author_link = f"[{org_author.first_name}](tg://user?id={org_author.id})"
 
         if sender and org_author:
-            if not sender == org_author:
+            if sender != org_author:
                 text = f"**{msgRep.ORIGINAL_AUTHOR}**:\n" + msgRep.DUAL_HAS_ID_OF.format(org_author_link, org_author.id) + "\n\n"
                 text += f"**{msgRep.FORWARDER}**:\n" + msgRep.DUAL_HAS_ID_OF.format(sender_link, sender.id)
+            elif sender.deleted:
+                text = msgRep.DEL_HAS_ID_OF.format(sender.id)
+            elif sender.is_self:
+                text = msgRep.MY_ID.format(sender.id)
             else:
-                if sender.deleted:
-                    text = msgRep.DEL_HAS_ID_OF.format(sender.id)
-                elif sender.is_self:
-                    text = msgRep.MY_ID.format(sender.id)
-                else:
-                    text = msgRep.DUAL_HAS_ID_OF.format(sender_link, sender.id)
-        elif sender and not org_author:
+                text = msgRep.DUAL_HAS_ID_OF.format(sender_link, sender.id)
+        elif sender:
             if msg.fwd_from and msg.fwd_from.from_name:
                 text = f"**{msgRep.ORIGINAL_AUTHOR}**:\n" + msgRep.ID_NOT_ACCESSIBLE.format(msg.fwd_from.from_name) + "\n\n"
                 text += f"**{msgRep.FORWARDER}**:\n" + msgRep.DUAL_HAS_ID_OF.format(sender_link, sender.id)
+            elif sender.deleted:
+                text = msgRep.DEL_HAS_ID_OF.format(sender.id)
+            elif sender.is_self:
+                text = msgRep.MY_ID.format(sender.id)
             else:
-                if sender.deleted:
-                    text = msgRep.DEL_HAS_ID_OF.format(sender.id)
-                elif sender.is_self:
-                    text = msgRep.MY_ID.format(sender.id)
-                else:
-                    text = msgRep.DUAL_HAS_ID_OF.format(sender_link, sender.id)
-        elif not sender and org_author:
+                text = msgRep.DUAL_HAS_ID_OF.format(sender_link, sender.id)
+        elif org_author:
             text = msgRep.ORG_HAS_ID_OF.format(org_author_link, org_author.id)
     else:
         user_obj = await fetch_user(event)
@@ -191,11 +189,10 @@ async def fetch_info(user_obj, event):
     user_deleted = user_obj.user.deleted
     user_self = user_obj.user.is_self
     first_name = user_obj.user.first_name if not user_deleted else msgRep.DELETED_ACCOUNT
-    last_name = user_obj.user.last_name if user_obj.user.last_name else None
+    last_name = user_obj.user.last_name or None
     dc_id = msgRep.UNKNOWN
-    if user_obj.profile_photo:
-        if hasattr(user_obj.profile_photo, "dc_id"):
-            dc_id = user_obj.profile_photo.dc_id
+    if user_obj.profile_photo and hasattr(user_obj.profile_photo, "dc_id"):
+        dc_id = user_obj.profile_photo.dc_id
     common_chat = user_obj.common_chats_count
     username = user_obj.user.username
     user_bio = user_obj.about

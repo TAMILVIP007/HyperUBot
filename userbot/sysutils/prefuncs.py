@@ -16,8 +16,8 @@ def strlist_to_list(strlist: str) -> list:
     return list_obj
 
 def str_to_bool(strbool: str) -> bool:
-    if strbool in ("True", "true"):
+    if strbool in {"True", "true"}:
         return True
-    elif strbool in ("False", "false"):
+    elif strbool in {"False", "false"}:
         return False
     raise ValueError(f"{strbool} is not a bool")

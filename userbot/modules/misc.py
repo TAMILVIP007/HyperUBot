@@ -22,10 +22,7 @@ async def coinflipper(coin):
     await coin.edit(msgRep.THRWING_COIN)
     time.sleep(3) # gives more character if we wait a bit
     number = random.randint(1, 10000)
-    if (number % 2 == 0):
-        retStr += msgRep.HEADS
-    else:
-        retStr += msgRep.TAILS
+    retStr += msgRep.HEADS if (number % 2 == 0) else msgRep.TAILS
     await coin.edit(retStr)
     return
 
@@ -54,9 +51,7 @@ async def randomizer(msg):
         await msg.edit(msgRep.SCND_LIMIT_INVALID)
         return
     if limit1 > limit2:
-        temp = limit1
-        limit1 = limit2
-        limit2 = temp
+        limit1, limit2 = limit2, limit1
     rand_num = random.randint(limit1, limit2)
     await msg.edit(msgRep.RAND_NUM_GEN.format(limit1, limit2, rand_num))
     return

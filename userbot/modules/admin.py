@@ -25,8 +25,7 @@ LOGGING = getConfig("LOGGING")
 
 @ehandler.on(command="adminlist", hasArgs=True, outgoing=True)
 async def adminlist(event):
-    arg = event.pattern_match.group(1)
-    if arg:
+    if arg := event.pattern_match.group(1):
         try:
             arg = int(arg)
         except:
@@ -47,15 +46,13 @@ async def adminlist(event):
 
     try:
         text = msgRep.ADMINS_IN_CHAT.format(chat.title) + ":\n\n"
-        num = 1
-        async for member in event.client.iter_participants(chat.id, filter=ChannelParticipantsAdmins):
+        async for num, member in enumerate(event.client.iter_participants(chat.id, filter=ChannelParticipantsAdmins), start=1):
             if member.deleted:
                 text += f"{num}. {msgRep.DELETED_ACCOUNT}\n"
             elif member.username:
                 text += f"{num}. @{member.username}\n"
             else:
                 text += f"{num}. [{member.first_name}](tg://user?id={member.id})\n"
-            num += 1
         await event.edit(text)
     except ChatAdminRequiredError:
         await event.edit(msgRep.NO_ADMIN)
@@ -246,7 +243,7 @@ async def promote(event):
         await event.edit(msgRep.NO_ONE_TO_PROMOTE)
         return
 
-    if not type(user) is User:
+    if type(user) is not User:
         await event.edit(msgRep.NOT_USER)
         return
 
@@ -276,7 +273,7 @@ async def promote(event):
                                           ban_users=True, delete_messages=True, pin_messages=True)
         else:
             # get our own admin rights but set add_admin perm to False. If we aren't admin set empty permissions
-            admin_perms = chat.admin_rights if chat.admin_rights else ChatAdminRights()
+            admin_perms = chat.admin_rights or ChatAdminRights()
             if admin_perms.add_admins is not None and not admin_perms.add_admins:
                 await event.edit(msgRep.ADD_ADMINS_REQUIRED)
                 return
@@ -321,22 +318,20 @@ async def demote(event):
         except ValueError as e:
             await event.edit(f"`{msgRep.GET_ENTITY_FAILED}: {e}`")
             return
+    elif arg_from_event := event.pattern_match.group(1):
+        try:
+            user = await event.client.get_entity(arg_from_event)
+        except ValueError as e:
+            await event.edit(f"`{msgRep.GET_ENTITY_FAILED}: {e}`")
+            return
     else:
-        arg_from_event = event.pattern_match.group(1)
-        if arg_from_event:
-            try:
-                user = await event.client.get_entity(arg_from_event)
-            except ValueError as e:
-                await event.edit(f"`{msgRep.GET_ENTITY_FAILED}: {e}`")
-                return
-        else:
-            user = None
+        user = None
 
     if not user:
         await event.edit(msgRep.NO_ONE_TO_DEMOTE)
         return
 
-    if not type(user) is User:
+    if type(user) is not User:
         await event.edit(msgRep.NOT_USER)
         return
 
@@ -353,10 +348,10 @@ async def demote(event):
         admins = []
         async for member in event.client.iter_participants(chat.id, filter=ChannelParticipantsAdmins):
             admins.append(member.id)
-        if not user.id in admins:
+        if user.id not in admins:
             await event.edit(msgRep.DEMOTED_ALREADY)
             return
-        user_is_admin = True if user.id in admins else False
+        user_is_admin = user.id in admins
     except:
         pass
 
@@ -510,7 +505,7 @@ async def delaccs(event):
     if deleted_accounts > 0 and not rem_del_accounts:
         await event.edit(msgRep.DEL_ACCS_COUNT.format(deleted_accounts))
     elif rem_del_accounts > 0 and rem_del_accounts <= deleted_accounts:
-        if not (deleted_accounts - rem_del_accounts) == 0:
+        if deleted_accounts - rem_del_accounts != 0:
             rem_accs_text = msgRep.REM_DEL_ACCS_COUNT.format(rem_del_accounts)
             rem_accs_excp_text = msgRep.REM_DEL_ACCS_COUNT_EXCP.format(deleted_accounts - rem_del_accounts)
             await event.edit(f"{rem_accs_text}`. `{rem_accs_excp_text}")

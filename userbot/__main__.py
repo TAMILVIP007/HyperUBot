@@ -35,7 +35,7 @@ class _Modules:
                 filename = basename(module)[:-3]
                 all_modules.append(filename)
                 try:
-                    if not filename in self.__not_load_modules:
+                    if filename not in self.__not_load_modules:
                         sys_modules.append(filename)
                 except:
                     sys_modules.append(filename)
@@ -43,7 +43,7 @@ class _Modules:
             if isfile(module) and module.endswith(".py"):
                 filename = basename(module)[:-3]
                 all_modules.append(filename)
-                if not filename in sys_modules:
+                if filename not in sys_modules:
                     user_modules.append(filename)
                 elif not SAFEMODE:
                     log.warning(f"Module '{filename}' not loaded as present in sys already")
@@ -114,7 +114,7 @@ if __name__ == "__main__":
         perf_reboot = getConfig("REBOOT", False)
         start_recovery = getConfig("START_RECOVERY", False)
         if perf_reboot or start_recovery:
-            PY_EXEC = executable if not " " in executable else '"' + executable + '"'
+            PY_EXEC = executable if " " not in executable else '"' + executable + '"'
             if perf_reboot:  # preferred if True
                 if getConfig("REBOOT_SAFEMODE"):
                     log.info("Rebooting into safe mode...")
@@ -123,8 +123,7 @@ if __name__ == "__main__":
                     log.info("Performing normal reboot...")
                     tcmd = [PY_EXEC, "-m", "userbot"]
             elif start_recovery:
-                commit_id = getConfig("UPDATE_COMMIT_ID")
-                if commit_id:
+                if commit_id := getConfig("UPDATE_COMMIT_ID"):
                     log.info("Starting auto update in recovery...")
                     tcmd = [PY_EXEC, "recovery.py", "-autoupdate", commit_id]
                 else:

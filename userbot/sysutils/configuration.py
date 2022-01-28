@@ -76,18 +76,14 @@ class _SysConfigurations:
                           join("userbot", "modules", "updater.py"),
                           join("userbot", "modules", "package_manager.py"),
                           join("userbot", "modules", "sideloader.py")]
-        valid_caller = False
-        for caller in special_caller:
-            if getouterframes(currentframe(), 2)[2].filename.endswith(caller):
-                valid_caller = True
-                break
+        valid_caller = any(
+            getouterframes(currentframe(), 2)[2].filename.endswith(caller)
+            for caller in special_caller
+        )
+
         module_caller = getouterframes(currentframe(), 2)[2].filename \
                         if valid_caller else getouterframes(currentframe(), 2)[1].filename
-        valid_caller = False
-        for caller in special_caller:
-            if module_caller.endswith(caller):
-                valid_caller = True
-                break
+        valid_caller = any(module_caller.endswith(caller) for caller in special_caller)
         if not valid_caller:
             raise AccessError("Access to configurations denied")
         if config == "UPDATE_COMMIT_ID" and \

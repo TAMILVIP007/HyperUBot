@@ -120,8 +120,12 @@ class EventHandler:
                         command_no_regex = event.pattern_match.group(0).split(" ")[0][1:]
                     except:
                         pass
-                    self.log.error(f"Command '{command_no_regex}' stopped due to an unhandled exception "
-                                   f"in function '{function.__name__}'", exc_info=True if self.traceback else False)
+                    self.log.error(
+                        f"Command '{command_no_regex}' stopped due to an unhandled exception "
+                        f"in function '{function.__name__}'",
+                        exc_info=bool(self.traceback),
+                    )
+
                     try:  # in case editing messages isn't allowed (channels)
                         await event.edit(f"`{msgResp.CMD_STOPPED.format(f'{command_no_regex}.exe')}`")
                     except:
@@ -191,8 +195,12 @@ class EventHandler:
                         command_no_regex = event.pattern_match.group(0).split(" ")[0][1:]
                     except:
                         pass
-                    self.log.error(f"Command '{command_no_regex}' stopped due to an unhandled exception "
-                                   f"in function '{function.__name__}'", exc_info=True if self.traceback else False)
+                    self.log.error(
+                        f"Command '{command_no_regex}' stopped due to an unhandled exception "
+                        f"in function '{function.__name__}'",
+                        exc_info=bool(self.traceback),
+                    )
+
                     try:
                         await event.edit(f"`{msgResp.CMD_STOPPED.format(f'{command_no_regex}.exe')}`")
                     except:
@@ -234,8 +242,10 @@ class EventHandler:
                 try:
                     await function(event)
                 except Exception as e:
-                    self.log.error(f"Function '{function.__name__}' stopped due to an unhandled exception",
-                                   exc_info=True if self.traceback else False)
+                    self.log.error(
+                        f"Function '{function.__name__}' stopped due to an unhandled exception",
+                        exc_info=bool(self.traceback),
+                    )
             tgclient.add_event_handler(func_callback, ChatAction(**args))
             return func_callback
         return decorator

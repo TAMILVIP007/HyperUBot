@@ -55,12 +55,15 @@ async def ping(args):
 async def speedtest(event):
     arg_from_event = event.pattern_match.group(1)
     chat =  await event.get_chat()
-    share_as_pic = True if arg_from_event.lower() == "pic"  else False
-    if share_as_pic:
-        # if speedtest is send to a group and send media is not allowed then skip 'pic' argument
-        if hasattr(chat, "default_banned_rights") and not chat.creator and not chat.admin_rights and \
-           chat.default_banned_rights.send_media:
-            share_as_pic = False  # disable
+    share_as_pic = arg_from_event.lower() == "pic"
+    if (
+        share_as_pic
+        and hasattr(chat, "default_banned_rights")
+        and not chat.creator
+        and not chat.admin_rights
+        and chat.default_banned_rights.send_media
+    ):
+        share_as_pic = False  # disable
     process = None
     all_test_passed = False
     check_mark = u"\u2705"
@@ -91,17 +94,13 @@ async def speedtest(event):
         log.error(me)
         if not all_test_passed:
             process = process[:-3] + f" {warning}"
-            await event.edit(process + "\n\n" + f"`{msgRep.SPD_FAILED}: {msgRep.SPD_NO_MEMORY}`")
-        else:
-            await event.edit(process + "\n\n" + f"`{msgRep.SPD_FAILED}: {msgRep.SPD_NO_MEMORY}`")
+        await event.edit(process + "\n\n" + f"`{msgRep.SPD_FAILED}: {msgRep.SPD_NO_MEMORY}`")
         return
     except Exception as e:
         log.error(e)
         if not all_test_passed:
             process = process[:-3] + f" {warning}"
-            await event.edit(process + "\n\n" + msgRep.SPD_FAILED)
-        else:
-            await event.edit(process + "\n\n" + msgRep.SPD_FAILED)
+        await event.edit(process + "\n\n" + msgRep.SPD_FAILED)
         return
 
     if share_as_pic:

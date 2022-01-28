@@ -81,10 +81,10 @@ def _set_autoupdate(commit_id: str) -> bool:
 @ehandler.on(command="update", hasArgs=True, outgoing=True)
 async def updater(event):
     arg = event.pattern_match.group(1)
-    update_now = True if arg.lower() == "upgrade" else False
+    update_now = arg.lower() == "upgrade"
     global _LATEST_VER
 
-    if not update_now or (update_now and not _LATEST_VER):
+    if not update_now or not _LATEST_VER:
         await event.edit(msgRep.CHECKING_UPDATES)
 
     if update_now and _LATEST_VER:
@@ -153,8 +153,7 @@ async def updater(event):
 
     if current_version < release_version:
         try:
-            assets = release_data.get("assets", [])
-            if assets:
+            if assets := release_data.get("assets", []):
                 for asset in assets:
                     if asset.get("name", "") == "rules.py":
                         _LATEST_VER["rules"] = asset.get("browser_download_url")

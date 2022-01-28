@@ -37,7 +37,7 @@ try:
     lang = import_module("userbot.translations." + getBotLangCode())
     log.info("Loading {} language".format(lang.NAME if hasattr(lang, "NAME") else "Unknown"))
 except ModuleNotFoundError:  # Language file not found
-    if not getBotLangCode() == "en":
+    if getBotLangCode() != "en":
         log.warning("'{}' language file not found. Make sure it exists! "
                     "Should have the same name as the UBOT_LANG config in your config file. "
                     "Attempting to load default language...".format(getBotLangCode()))
@@ -53,7 +53,7 @@ except ModuleNotFoundError:  # Language file not found
         log.error("Default language file not found, bot quitting!")
         quit(1)
 except:  # Unhandled exception in language file
-    if not getBotLangCode() == "en":
+    if getBotLangCode() != "en":
         log.warning("There was a problem loading the '{}' language file. "
                     "Attempting to load default language...".format(getBotLangCode()), exc_info=True)
         try:

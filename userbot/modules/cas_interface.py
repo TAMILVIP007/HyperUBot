@@ -81,7 +81,7 @@ def isCSVoutdated() -> bool:
         return False
     file_date = datetime.fromtimestamp(getmtime(CAS_CSV))
     duration = datetime.today() - file_date
-    return True if duration.days >= 1 else False
+    return duration.days >= 1
 
 async def casupdater(event, showinfo: bool, tries: int = 0):
     try:
@@ -151,7 +151,7 @@ async def cascheck(event):
         except Exception as e:
             log.warning(e)
             entity = None
-        is_chat = True if isinstance(entity, (Chat, Channel)) else False
+        is_chat = isinstance(entity, (Chat, Channel))
         if not is_chat:
             try:
                 cas_data = cas_api.get_user_data(user_id=entity.id if entity else int(entity_id))
@@ -212,11 +212,10 @@ async def cascheck(event):
                     cas_count += 1
                     if user.deleted:
                         text_users += f"\n{cas_count}. {msgRep.DELETED_ACCOUNT} - `{user.id}`"
+                    elif user.username:
+                        text_users += f"\n{cas_count}. @{user.username} - `{user.id}`"
                     else:
-                        if user.username:
-                            text_users += f"\n{cas_count}. @{user.username} - `{user.id}`"
-                        else:
-                            text_users += f"\n{cas_count}. [{user.first_name}](tg://user?id={user.id}) - `{user.id}`"
+                        text_users += f"\n{cas_count}. [{user.first_name}](tg://user?id={user.id}) - `{user.id}`"
             if cas_count == 1:
                 text = msgRep.USER_DETECTED.format(cas_count, title) + ":\n"
             else:

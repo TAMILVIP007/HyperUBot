@@ -22,8 +22,7 @@ class LogFileFormatter(Formatter):
                       "ERROR": LOG_FORMAT,
                       "CRITICAL": LOG_FORMAT}
         get_type = LOG_LEVELS.get(logtype.levelname)  # get current level
-        formatter = Formatter(get_type, "%Y-%m-%d %H:%M:%S").format(logtype)
-        return formatter
+        return Formatter(get_type, "%Y-%m-%d %H:%M:%S").format(logtype)
 
 class LogColorFormatter(Formatter):
     def format(self, logtype):
@@ -39,6 +38,5 @@ class LogColorFormatter(Formatter):
                       "ERROR": setColorText(LOG_FORMAT, Color.RED),
                       "CRITICAL": setColorTextBG(LOG_FORMAT, ColorBG.RED)}
         get_type = LOG_COLORS.get(logtype.levelname)
-        formatter = Formatter(get_type, "%Y-%m-%d %H:%M:%S").format(logtype)
-        return formatter
+        return Formatter(get_type, "%Y-%m-%d %H:%M:%S").format(logtype)
 

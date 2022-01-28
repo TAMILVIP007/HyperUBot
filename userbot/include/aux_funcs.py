@@ -61,7 +61,6 @@ async def fetch_user(event=None, full_user=False, get_chat=False, org_author=Fal
         if not user:
             await event.edit(msgsLang.PERSON_ANONYMOUS)
             return (None, None) if get_chat else None
-            return
     else:
         try:
             # args_from_event becomes a list. it takes maximum of 2 arguments,
@@ -103,9 +102,9 @@ async def fetch_user(event=None, full_user=False, get_chat=False, org_author=Fal
             user_obj = await event.client(GetFullUserRequest(user))
         else:
             user_obj = await event.client.get_entity(user)
-            if not type(user_obj) is User:
-               await event.edit(msgsLang.ENTITY_NOT_USER)
-               user_obj = None
+            if type(user_obj) is not User:
+                await event.edit(msgsLang.ENTITY_NOT_USER)
+                user_obj = None
         return (user_obj, chat_obj) if get_chat else user_obj
     except Exception as e:
         log.warning(e)
@@ -188,7 +187,7 @@ def isRemoteCMD(event, chat_id: int) -> bool:
     """
     try:
         chat_from_event = int(str(event.chat_id)[3:]) if str(event.chat_id).startswith("-100") else event.chat_id
-        return True if not chat_id == chat_from_event else False
+        return chat_id != chat_from_event
     except Exception as e:
         log.error(e)
     return False
@@ -218,7 +217,7 @@ def format_chat_id(chat) -> int:
             chat_id = f"-{chat_id}"
         chat_id = int(chat_id)
     except Exception as e:
-        log.error(f"Failed to format chat id")
+        log.error('Failed to format chat id')
     return chat_id
 
 def module_info(name: str = None, authors: str = None, version: str = None) -> dict:
@@ -255,9 +254,7 @@ def shell_runner(commands: list):
     Returns:
         The output as a string
     """
-    full_cmd = ""
-    for cmd in commands:
-        full_cmd += cmd + " "
+    full_cmd = "".join(cmd + " " for cmd in commands)
     try:
         return check_output(full_cmd, shell=True).decode()
     except CalledProcessError:

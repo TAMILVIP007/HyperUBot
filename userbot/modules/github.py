@@ -42,7 +42,7 @@ def getData(url, index):
 @ehandler.on(command="git", hasArgs=True, outgoing=True)
 async def get_release(event):
     commandArgs = event.text.split(" ")
-    if len(commandArgs) != 2 or not "/" in commandArgs[1]:
+    if len(commandArgs) != 2 or "/" not in commandArgs[1]:
         await event.edit(msgRep.INVALID_ARGS)
         return
     index = 0  # later will support going back in time!

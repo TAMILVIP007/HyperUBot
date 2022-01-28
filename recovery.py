@@ -31,7 +31,7 @@ BACKUP_DIR = os.path.join(".", "backup")
 GITIGNORE = os.path.join(".", ".gitignore")
 RELEASE_DIR = os.path.join(".", "releases")
 UPDATE_PACKAGE = os.path.join(RELEASE_DIR, "update.zip")
-PY_EXEC = executable if not " " in executable else '"' + executable + '"'
+PY_EXEC = executable if " " not in executable else '"' + executable + '"'
 WIN_COLOR_ENABLED = False
 
 try:
@@ -83,7 +83,7 @@ class _Recovery:
                     do_not_list.append(element)
         for name in os.listdir(source):
             srcname = os.path.join(source, name)
-            if not srcname in do_not_list:
+            if srcname not in do_not_list:
                 listed_dirs.append(srcname)
                 if os.path.isdir(srcname):
                     for elem in self._list_dirs(srcname, ignore):
@@ -102,7 +102,7 @@ class _Recovery:
                     for name in glob(path):
                         dir_name = os.path.dirname(name)
                         dir_name = os.path.join(".", dir_name)
-                        if not dir_name in paths:
+                        if dir_name not in paths:
                             paths.append(dir_name)
                         paths.append(os.path.join(".", name))
                         if os.path.isdir(name):
@@ -137,11 +137,7 @@ class _Recovery:
 
     def _remove(self, dirs: list = [], ignore: list = []):
         def name_in_list(name_to_check, list_to_check) -> bool:
-            # only exact path names should be ignored
-            for name in list_to_check:
-                if name == name_to_check:
-                    return True
-            return False
+            return any(name == name_to_check for name in list_to_check)
         for name in reversed(dirs):
             if not name_in_list(name, ignore):
                 if os.path.isfile(name):
@@ -165,8 +161,11 @@ class _Recovery:
         try:
             with open(ver_py, "r") as script:
                 for line in script.readlines():
-                    if not line.startswith("#") and not line == "\n" and \
-                       line.startswith("VERSION="):
+                    if (
+                        not line.startswith("#")
+                        and line != "\n"
+                        and line.startswith("VERSION=")
+                    ):
                         if line.split("=")[1]:
                             version = line.split("=")[1]
                             version = version.replace("\n", "")
@@ -387,7 +386,7 @@ class _Restore(_Recovery):
                 for uname in userbot:
                     if uname == name:
                         result +=1
-            if not result == len(userbot):
+            if result != len(userbot):
                 print(setColorText(f"{bkSource}: Invalid archive format!",
                                    Colors.RED))
                 return
@@ -453,8 +452,11 @@ class _Updater(_Recovery):
         try:
             with open(GITIGNORE, "r") as git:
                 for line in git.readlines():
-                    if not line.startswith("#") and not line == "\n" and \
-                       not "__pycache__" in line:
+                    if (
+                        not line.startswith("#")
+                        and line != "\n"
+                        and "__pycache__" not in line
+                    ):
                         line = line.split("#")[0].rstrip()
                         if PLATFORM.startswith("win"):
                             line = line.replace("/", "\\")
@@ -462,7 +464,7 @@ class _Updater(_Recovery):
                             for name in glob(line):
                                 dir_name = os.path.dirname(name)
                                 dir_name = os.path.join(".", dir_name)
-                                if not dir_name in ignore_paths:
+                                if dir_name not in ignore_paths:
                                     ignore_paths.append(dir_name)
                                 ignore_paths.append(os.path.join(".", name))
                                 if os.path.isdir(name):
@@ -490,7 +492,7 @@ class _Updater(_Recovery):
                              Colors.YELLOW))
             return
 
-        if not self.__commit_id == self.__commit_id_package:
+        if self.__commit_id != self.__commit_id_package:
             print(setColorText("Commit ID mismatch!", Colors.YELLOW))
             self._remove_extracted_update_package(self.__package_path)
             return
@@ -534,12 +536,12 @@ class _Updater(_Recovery):
         ignore = []
         if parse_gitignore:
             try:
-              print("Parsing gitignore...")
-              if os.path.exists(GITIGNORE):
-                 git_ignore = self.__parse_gitignore()
-                 for elem in git_ignore:
-                    if not elem == os.path.join(".", "userbot"):
-                        ignore.append(elem)
+                print("Parsing gitignore...")
+                if os.path.exists(GITIGNORE):
+                    git_ignore = self.__parse_gitignore()
+                    for elem in git_ignore:
+                        if elem != os.path.join(".", "userbot"):
+                            ignore.append(elem)
             except Exception as e:
                print(
                    setColorText(f"Failed to parse gitgignore: {e}",
@@ -738,10 +740,9 @@ if __name__ == "__main__":
     print("HyperUBot Recovery System")
     print(f"Recovery version: {VERSION}")
     recovery = _Recovery()
-    if len(args) > 1:
-        if args[1].lower() == "-autoupdate":
-            auto_updater = True
-            recovery.recovery_mode = setColorText("AUTO UPDATE", Colors.CYAN)
+    if len(args) > 1 and args[1].lower() == "-autoupdate":
+        auto_updater = True
+        recovery.recovery_mode = setColorText("AUTO UPDATE", Colors.CYAN)
     print(f"HyperUBot version: {recovery.userbot_version()}")
     print(f"Mode: {recovery.recovery_mode}")
     if auto_updater:
@@ -783,7 +784,7 @@ if __name__ == "__main__":
                                              Colors.YELLOW))
                 except KeyboardInterrupt:
                     pass
-                if temp and not temp.lower() == "x":
+                if temp and temp.lower() != "x":
                     _apply_update(temp, auto_updater)
             elif num == "4":
                 print("\nMain Menu > Backup current version")

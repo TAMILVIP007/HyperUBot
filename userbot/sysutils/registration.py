@@ -21,10 +21,15 @@ class _RegisterModules:
         self.__module_info = {}
 
     def _update_all_modules(self, name_of_module: str):
-        caller = True \
-                 if getouterframes(currentframe(), 2)[2].filename.endswith("userbot/__main__.py") or \
-                    getouterframes(currentframe(), 2)[2].filename.endswith("userbot\\__main__.py") \
-                 else False
+        caller = bool(
+            getouterframes(currentframe(), 2)[2].filename.endswith(
+                "userbot/__main__.py"
+            )
+            or getouterframes(currentframe(), 2)[2].filename.endswith(
+                "userbot\\__main__.py"
+            )
+        )
+
         if not caller:
             caller = getouterframes(currentframe(), 2)[2]
             log.error(f"update_all_modules only callable in main ({basename(caller.filename)}:{caller.lineno})")
@@ -32,10 +37,15 @@ class _RegisterModules:
         self.__all_modules.append(name_of_module)
 
     def _update_load_modules(self, name_of_module: str, is_running: bool):
-        caller = True \
-                 if getouterframes(currentframe(), 2)[2].filename.endswith("userbot/__main__.py") or \
-                    getouterframes(currentframe(), 2)[2].filename.endswith("userbot\\__main__.py") \
-                 else False
+        caller = bool(
+            getouterframes(currentframe(), 2)[2].filename.endswith(
+                "userbot/__main__.py"
+            )
+            or getouterframes(currentframe(), 2)[2].filename.endswith(
+                "userbot\\__main__.py"
+            )
+        )
+
         if not caller:
             caller = getouterframes(currentframe(), 2)[2]
             log.error(f"update_load_modules only callable in main ({basename(caller.filename)}:{caller.lineno})")
@@ -43,10 +53,15 @@ class _RegisterModules:
         self.__load_modules[name_of_module] = is_running
 
     def _update_user_modules(self, name_of_module: str):
-        caller = True \
-                 if getouterframes(currentframe(), 2)[2].filename.endswith("userbot/__main__.py") or \
-                    getouterframes(currentframe(), 2)[2].filename.endswith("userbot\\__main__.py") \
-                 else False
+        caller = bool(
+            getouterframes(currentframe(), 2)[2].filename.endswith(
+                "userbot/__main__.py"
+            )
+            or getouterframes(currentframe(), 2)[2].filename.endswith(
+                "userbot\\__main__.py"
+            )
+        )
+
         if not caller:
             caller = getouterframes(currentframe(), 2)[2]
             log.error(f"update_user_modules only callable in main ({basename(caller.filename)}:{caller.lineno})")
@@ -60,7 +75,7 @@ class _RegisterModules:
                         f"Module description for '{caller}' not registered")
             return
 
-        if not caller in self.__module_desc.keys():
+        if caller not in self.__module_desc.keys():
             self.__module_desc[caller] = description
         else:
             log.warning(f"Module description for {caller} registered already")
@@ -81,7 +96,7 @@ class _RegisterModules:
                         f"Module info for '{caller}' not registered")
             return
 
-        if not caller in self.__module_info.keys():
+        if caller not in self.__module_info.keys():
             self.__module_info[caller] = {"name": name, "authors": authors, "version": version}
         else:
             log.warning(f"Module info for {caller} registered already")
@@ -133,16 +148,21 @@ class _RegisterCMD:
             True if pre-registered successfully or False if unauthorized caller calls this function
             or cmd is pre-registered already
         """
-        caller = True \
-                 if getouterframes(currentframe(), 2)[2].filename.endswith("userbot/sysutils/event_handler.py") or \
-                    getouterframes(currentframe(), 2)[2].filename.endswith("userbot\\sysutils\\event_handler.py") \
-                 else False
+        caller = bool(
+            getouterframes(currentframe(), 2)[2].filename.endswith(
+                "userbot/sysutils/event_handler.py"
+            )
+            or getouterframes(currentframe(), 2)[2].filename.endswith(
+                "userbot\\sysutils\\event_handler.py"
+            )
+        )
+
         if not caller:
             caller = getouterframes(currentframe(), 2)[2]
             log.error(f"pre_register_cmd only callable in EventHandler ({basename(caller.filename)}:{caller.lineno})")
             return False
         module_name = basename(getfile(func)[:-3])
-        if not cmd in self.__registered_cmds.keys():
+        if cmd not in self.__registered_cmds.keys():
             if not self.__first_time_register:
                 log.info("Registering commands")
                 self.__first_time_register = True
